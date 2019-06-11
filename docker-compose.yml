@@ -1,0 +1,59 @@
+version: '3'
+
+services:
+  web:
+    container_name: b2b
+    restart: always
+    build: ./web
+    expose:
+      - "8000"
+    links:
+      - postgres:postgres
+      - redis:redis
+    volumes:
+      - ./web:/app
+      - web-django:/usr/src/app
+      - web-static:/usr/src/app/static
+      - ./crontab/crontab:/etc/crontab
+    env_file: .env
+    environment:
+      DEBUG: 'true'
+    command: /usr/local/bin/gunicorn docker_django.wsgi:application -w 2 -b :8000 --reload
+
+  nginx:
+    container_name: b2b_nginx
+    restart: always
+    build: ./nginx/
+    ports:
+      - "8081:80"
+    volumes:
+      - web-static:/www/static
+    links:
+      - web:web
+
+  postgres:
+    container_name: b2b_db
+    restart: always
+    image: postgres:latest
+    ports:
+      - "54321:5432"
+    volumes:
+      - ./DB:/docker-entrypoint-initdb.d
+    environment:
+      POSTGRES_DB: b2b_db
+      POSTGRES_USER: b2b_user
+      POSTGRES_PASSWORD: b2b_pws
+  redis:
+    container_name: b2b_redis
+    restart: always
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+
+volumes:
+  web-django:
+  web-static:
+  pgdata:
+  redisdata:
