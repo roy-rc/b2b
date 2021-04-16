@@ -7,4 +7,4 @@ openpyxl
 python-dateutil
 django_excel
 django-safedelete<=1
-django-debug-toolbar==1.11
+django-debug-toolbar==1.11.1
